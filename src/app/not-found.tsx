@@ -7,13 +7,13 @@ export default function NotFound() {
         <div className="absolute inset-0 bg-[radial-gradient(700px_circle_at_15%_20%,rgba(16,185,129,0.18),transparent_55%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(900px_circle_at_85%_30%,rgba(99,102,241,0.16),transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(800px_circle_at_50%_95%,rgba(236,72,153,0.10),transparent_55%)]" />
-        <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_72%)]" />
+        <div className="absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_72%)] [background-size:44px_44px] opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-white/5" />
       </div>
 
       <div className="relative mx-auto flex min-h-screen max-w-5xl items-center justify-center px-6 py-20">
         <div className="relative w-full max-w-xl">
-          <div className="pointer-events-none absolute -top-10 left-0 select-none text-[120px] font-semibold leading-none tracking-tighter text-white/5 blur-[0.5px] sm:text-[160px]">
+          <div className="pointer-events-none absolute -top-10 left-0 text-[120px] leading-none font-semibold tracking-tighter text-white/5 blur-[0.5px] select-none sm:text-[160px]">
             404
           </div>
 
