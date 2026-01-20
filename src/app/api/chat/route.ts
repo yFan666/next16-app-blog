@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
   try {
     const result = streamText({
       model: deepSeek("deepseek-chat"),
-      messages: toModelMessages(messages),
+      messages: toModelMessages(messages) as any,
       system: "你是一个高级程序员，请根据用户的问题给出回答",
     });
 
