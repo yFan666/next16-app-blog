@@ -1,23 +1,30 @@
 name: blog-fries
 
+networks:
+  blog-fries-net:
+    name: blog-fries-net
+
 services:
   mysql:
     image: mysql:8.4
     restart: unless-stopped
     ports:
       - "3306:3306"
+    networks:
+      - blog-fries-net
     environment:
       TZ: Asia/Shanghai
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-666888}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-blog}
-      MYSQL_USER: ${MYSQL_USER:-blog}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-blog}
+      MYSQL_USER: ${MYSQL_USER:-youli}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-666888}
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_0900_ai_ci
       - --sql-mode=STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
     volumes:
       - ./.docker-data/mysql:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
     healthcheck:
       test:
         [
@@ -33,6 +40,8 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+    networks:
+      - blog-fries-net
     command:
       - redis-server
       - --appendonly
