@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { COMMON_CODE, POSTS_CODE } from "@/server/api/codes";
 import { createPost, listPosts } from "@/server/services/posts";
 
 type CreatePostBody = {
@@ -15,47 +16,93 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 export async function GET(request: NextRequest) {
-  const takeParam = request.nextUrl.searchParams.get("take");
-  const take = takeParam ? Number(takeParam) : 20;
-  const items = await listPosts({ take });
+  try {
+    const takeParam = request.nextUrl.searchParams.get("take");
+    const take = takeParam ? Number(takeParam) : 20;
+    const items = await listPosts({ take });
 
-  return NextResponse.json({ items });
+    return NextResponse.json({
+      code: COMMON_CODE.OK,
+      message: "成功",
+      data: { items },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "未知错误";
+    return NextResponse.json(
+      {
+        code: POSTS_CODE.UNKNOWN,
+        message,
+        data: null,
+      },
+      { status: 500 },
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as CreatePostBody;
+  try {
+    const body = (await request.json()) as CreatePostBody;
 
-  if (!isNonEmptyString(body.title)) {
-    return NextResponse.json({ error: "title is required" }, { status: 400 });
-  }
+    if (!isNonEmptyString(body.title)) {
+      return NextResponse.json(
+        {
+          code: POSTS_CODE.INVALID_TITLE,
+          message: "title is required",
+          data: null,
+        },
+        { status: 400 },
+      );
+    }
 
-  if (!isNonEmptyString(body.authorEmail)) {
+    if (!isNonEmptyString(body.authorEmail)) {
+      return NextResponse.json(
+        {
+          code: POSTS_CODE.INVALID_AUTHOR_EMAIL,
+          message: "authorEmail is required",
+          data: null,
+        },
+        { status: 400 },
+      );
+    }
+
+    const title = body.title.trim();
+    const authorEmail = body.authorEmail.trim().toLowerCase();
+
+    const authorName =
+      typeof body.authorName === "string" && body.authorName.trim().length > 0
+        ? body.authorName.trim()
+        : undefined;
+
+    const content =
+      typeof body.content === "string" ? body.content.trim() : undefined;
+
+    const isPublished = body.isPublished === true;
+
+    const created = await createPost({
+      title,
+      content,
+      authorEmail,
+      authorName,
+      isPublished,
+    });
+
     return NextResponse.json(
-      { error: "authorEmail is required" },
-      { status: 400 },
+      {
+        code: COMMON_CODE.OK,
+        message: "成功",
+        data: { item: created },
+      },
+      { status: 201 },
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "未知错误";
+    return NextResponse.json(
+      {
+        code: POSTS_CODE.UNKNOWN,
+        message,
+        data: null,
+      },
+      { status: 500 },
     );
   }
-
-  const title = body.title.trim();
-  const authorEmail = body.authorEmail.trim().toLowerCase();
-
-  const authorName =
-    typeof body.authorName === "string" && body.authorName.trim().length > 0
-      ? body.authorName.trim()
-      : undefined;
-
-  const content =
-    typeof body.content === "string" ? body.content.trim() : undefined;
-
-  const isPublished = body.isPublished === true;
-
-  const created = await createPost({
-    title,
-    content,
-    authorEmail,
-    authorName,
-    isPublished,
-  });
-
-  return NextResponse.json({ item: created }, { status: 201 });
 }

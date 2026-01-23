@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { COMMON_CODE } from "@/server/api/codes";
+
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams;
 
   console.log("🍟🚀🍟 ~ GET ~ query:", query.get("id"));
 
   return NextResponse.json({
-    message: "GET reuqest successful",
+    code: COMMON_CODE.OK,
+    message: "成功",
+    data: { message: "GET request successful" },
   });
 }
 
@@ -18,7 +22,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json(); //接受json数据
   console.log("🍟🚀🍟 ~ POST ~ body:", body);
   return NextResponse.json(
-    { message: "Post request successful", body },
+    { code: COMMON_CODE.OK, message: "成功", data: { message: "成功", body } },
     { status: 201 },
   );
   //返回json数据

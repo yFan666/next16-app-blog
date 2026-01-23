@@ -6,6 +6,21 @@ type RequestJsonOptions = {
   cache?: RequestCache;
 };
 
+export type ApiResponse<T> =
+  | { code: 0; message: string; data: T }
+  | { code: number; message: string; data: null };
+
+export class ApiError extends Error {
+  status: number;
+  code?: number;
+
+  constructor(input: { message: string; status: number; code?: number }) {
+    super(input.message);
+    this.status = input.status;
+    this.code = input.code;
+  }
+}
+
 function buildUrl(path: string, query?: RequestJsonOptions["query"]): string {
   const url = new URL(path, "http://localhost");
   if (query) {
@@ -15,6 +30,18 @@ function buildUrl(path: string, query?: RequestJsonOptions["query"]): string {
     }
   }
   return url.pathname + url.search;
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object";
+}
+
+function isApiResponse(value: unknown): value is ApiResponse<unknown> {
+  if (!isObject(value)) return false;
+  if (!("code" in value) || !("message" in value) || !("data" in value)) {
+    return false;
+  }
+  return typeof value.code === "number" && typeof value.message === "string";
 }
 
 export async function requestJson<T>(
@@ -33,18 +60,36 @@ export async function requestJson<T>(
     cache: options?.cache,
   });
 
-  if (!res.ok) {
-    let message = `Request failed: ${res.status}`;
-    try {
-      const json = (await res.json()) as { error?: unknown; message?: unknown };
-      if (typeof json.error === "string" && json.error.trim()) {
-        message = json.error;
-      } else if (typeof json.message === "string" && json.message.trim()) {
-        message = json.message;
-      }
-    } catch {}
-    throw new Error(message);
+  let json: unknown = null;
+  try {
+    json = (await res.json()) as unknown;
+  } catch {}
+
+  if (isApiResponse(json)) {
+    if (res.ok && json.code === 0) {
+      return json.data as T;
+    }
+
+    throw new ApiError({
+      status: res.status,
+      code: json.code,
+      message: json.message || `Request failed: ${res.status}`,
+    });
   }
 
-  return (await res.json()) as T;
+  if (!res.ok) {
+    let message = `Request failed: ${res.status}`;
+    if (isObject(json)) {
+      const legacyError = json.error;
+      const legacyMessage = json.message;
+      if (typeof legacyError === "string" && legacyError.trim()) {
+        message = legacyError;
+      } else if (typeof legacyMessage === "string" && legacyMessage.trim()) {
+        message = legacyMessage;
+      }
+    }
+    throw new ApiError({ status: res.status, message });
+  }
+
+  return json as T;
 }

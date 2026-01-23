@@ -7,7 +7,7 @@ const checkLogin = async () => {
   const res = await fetch("/api/login");
   const data = await res.json();
 
-  if (data.code === 1) {
+  if (data.code === 0) {
     return true;
   } else {
     redirect("/");
